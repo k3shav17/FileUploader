@@ -14,13 +14,16 @@ import { FileService } from './file.service';
 })
 export class AppComponent {
   filenames: string[] = [];
-  fileStatus: { status: string; requestType: string; percent: number };
+  // fileStatus: { status?: string; requestType?: string; percent: number };
+  status: string = '';
+  requestType: string = '';
+  percent: number = 0;
+
   constructor(private fileService: FileService) {}
 
   // function to upload files
   onUploadFiles(files: File[]): void {
     const formData = new FormData();
-
     for (const file of files) {
       formData.append('files', file, file.name);
       this.fileService.upload(formData).subscribe(
@@ -46,16 +49,17 @@ export class AppComponent {
   reportProgress(httpEvent: HttpEvent<string[] | Blob>): void {
     switch (httpEvent.type) {
       case HttpEventType.UploadProgress:
-        this.updateStatus(httpEvent.loaded, httpEvent.total, 'Uploading');
+        this.updateStatus(httpEvent.loaded, httpEvent.total, 'Uploading... ');
         break;
       case HttpEventType.DownloadProgress:
-        this.updateStatus(httpEvent.loaded, httpEvent.total, 'Downloading');
+        this.updateStatus(httpEvent.loaded, httpEvent.total, 'Downloading... ');
         break;
       case HttpEventType.ResponseHeader:
         console.log('Header returned', httpEvent);
         break;
       case HttpEventType.Response:
         if (httpEvent.body instanceof Array) {
+          this.status = 'done';
           for (const filename of httpEvent.body) {
             this.filenames.unshift(filename);
           }
@@ -67,14 +71,15 @@ export class AppComponent {
             })
           );
         }
+        this.status = 'done';
         break;
       default:
         console.log(httpEvent);
     }
   }
   updateStatus(loaded: number, total: number, requestType: string) {
-    this.fileStatus.status = 'progress';
-    this.fileStatus.requestType = requestType;
-    this.fileStatus.percent = Math.round((loaded / total) * 100);
+    this.status = 'progress';
+    this.requestType = requestType;
+    this.percent = Math.round((loaded / total) * 100);
   }
 }
