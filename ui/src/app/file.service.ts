@@ -10,7 +10,7 @@ export class FileService {
   constructor(private http: HttpClient) {}
 
   // define function to upload files
-  upload(formData: FormData): Observable<HttpEvent<String[]>> {
+  upload(formData: FormData): Observable<HttpEvent<string[]>> {
     return this.http.post<string[]>(`${this.server}/file/upload`, formData, {
       reportProgress: true,
       observe: 'events',
@@ -18,4 +18,11 @@ export class FileService {
   }
 
   // define function to download files
+  download(filename: string): Observable<HttpEvent<Blob>> {
+    return this.http.get(`${this.server}/file/download/${filename}`, {
+      reportProgress: true,
+      observe: 'events',
+      responseType: 'blob',
+    });
+  }
 }
